@@ -1,16 +1,17 @@
-import { LinksFunction, json } from "@remix-run/node";
+import { LinksFunction, json, redirect } from "@remix-run/node";
 import {
   Form,
-  Link,
   Links,
   Meta,
+  NavLink,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useNavigation,
 } from "@remix-run/react";
 
-import { getContacts } from "./data";
+import { getContacts, createEmptyContact } from "./data";
 
 import appStylesHref from "./app.css?url";
 
@@ -18,14 +19,19 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: appStylesHref },
 ];
 
-export async function loader() {
+export const loader = async () => {
   const contacts = await getContacts();
   return json({ contacts });
-}
+};
+
+export const action = async () => {
+  const contact = await createEmptyContact();
+  return redirect(`/contacts/${contact.id}/edit`);
+};
 
 export default function App() {
   const { contacts } = useLoaderData<typeof loader>();
-
+  const navigation = useNavigation();
   return (
     <html lang="en">
       <head>
@@ -56,16 +62,28 @@ export default function App() {
             {contacts.length ? (
               <ul>
                 {contacts.map((contact) => (
-                  <Link key={contact.id} to={`/contacts/${contact.id}`}>
-                    {contact.first || contact.last ? (
-                      <>
-                        {contact.first} {contact.last}
-                      </>
-                    ) : (
-                      <i>No Name</i>
-                    )}{" "}
-                    {contact.favorite ? <span>★</span> : null}
-                  </Link>
+                  <li key={contact.id}>
+                    <NavLink
+                      className={({ isActive, isPending }) => {
+                        if (isActive) {
+                          return "active";
+                        } else if (isPending) {
+                          return "pending";
+                        }
+                        return "";
+                      }}
+                      to={`/contacts/${contact.id}`}
+                    >
+                      {contact.first || contact.last ? (
+                        <>
+                          {contact.first} {contact.last}
+                        </>
+                      ) : (
+                        <i>No Name</i>
+                      )}{" "}
+                      {contact.favorite ? <span>★</span> : null}
+                    </NavLink>
+                  </li>
                 ))}
               </ul>
             ) : (
@@ -75,7 +93,10 @@ export default function App() {
             )}
           </nav>
         </div>
-        <div id="detail">
+        <div
+          id="detail"
+          className={navigation.state === "loading" ? "loading" : ""}
+        >
           <Outlet />
         </div>
         <ScrollRestoration />
