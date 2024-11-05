@@ -1,11 +1,9 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import type { FunctionComponent } from "react";
 
 import { getContact } from "../data";
-import type { ContactRecord } from "../data";
-
+import { Favorite } from "~/components/favorite";
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.contactId, "Missing contactId");
 
@@ -79,25 +77,3 @@ export default function Contact() {
     <p>No contact</p>
   );
 }
-
-const Favorite: FunctionComponent<{
-  contact: Pick<ContactRecord, "favorite">;
-}> = ({ contact }) => {
-  const favorite = contact.favorite;
-
-  return (
-    <Form method="post">
-      <button
-        aria-label={
-          favorite
-            ? "Remove from favorites"
-            : "Add to favorites"
-        }
-        name="favorite"
-        value={favorite ? "false" : "true"}
-      >
-        {favorite ? "★" : "☆"}
-      </button>
-    </Form>
-  );
-};
