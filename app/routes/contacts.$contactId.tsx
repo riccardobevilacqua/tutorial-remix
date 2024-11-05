@@ -4,6 +4,7 @@ import invariant from "tiny-invariant";
 
 import { getContact } from "../data";
 import { Favorite } from "~/components/favorite";
+
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.contactId, "Missing contactId");
 
